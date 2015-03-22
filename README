@@ -1,0 +1,5 @@
+* About the programme
+
+    Scanode is a tool that provides hardware checks for a host. All checks are
+implemented to be run through SSH.
+
