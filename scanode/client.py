@@ -8,21 +8,44 @@ from check.hwcheck import check_capacity
 from check.hwcheck import check_ipmi_access
 
 
-def _print_head():
-    print '''
-#===============================================================#
-#                      TESTING MASTER NODE                      #
-#===============================================================#
-'''
+def _print_head(host):
 
+    len_row = 79
+
+    caption = 'TESTING NODE '
+    lspace = (len_row - len(caption) - len(host) - 2) / 2
+    rspace = len_row - lspace - len(caption) - len(host) - 2
+
+    print '#%s#' % ('='*(len_row-2))
+    print '#%s%s%s%s#' % (' ' * lspace,
+                          caption,
+                          host,
+                          ' ' * rspace
+                          )
+    print '#%s#' % ('='*(len_row-2))
+    print ''
+
+def _print_sep_traceback():
+
+    len_row = 79
+    print '\n#%s#\n' % ('=' * (len_row - 2))
 
 def _print_foot():
-    print '''
-#===============================================================#
-#                      FINISH TESTING                           #
-#===============================================================#
-'''
 
+    len_row = 79
+
+    caption = 'FINISH TESTING'
+
+    lspace = (len_row - len(caption) - 2) / 2
+    rspace = len_row - lspace - len(caption) - 2
+
+    print '#%s#' % ('='*(len_row-2))
+    print '#%s%s%s#' % (' ' * lspace,
+                        caption,
+                        ' ' * rspace
+                        )
+    print '#%s#' % ('='*(len_row-2))
+    print ''
 
 def run_test(test, con_info):
     '''Executes test with con_info and catches the result of it to show in
@@ -49,7 +72,8 @@ def _print_fails(fails):
         return
 
     print ''
-    print 'Tests failed.'
+    print '[ TEST FAILED ]'
+    print ''
 
     for fail in fails:
         if fail[1] == '':
@@ -73,7 +97,10 @@ def main():
             elif arg.startswith('--password='):
                 con_info['password'] = arg[11:]
 
-    _print_head()
+    if 'host' not in con_info.keys():
+        raise KeyError('Host is not specified.')
+
+    _print_head(con_info['host'])
 
     tests = [check_cpu, check_ram, check_capacity, check_ipmi_access]
     fails = list()
@@ -83,6 +110,7 @@ def main():
         if msg != '':
             fails.append(msg)
 
+    _print_sep_traceback()
     _print_fails(fails)
     _print_foot()
 
