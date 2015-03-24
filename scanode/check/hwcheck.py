@@ -1,10 +1,12 @@
+import inspect
+import sys
 
 from common.ssh import run_ssh_cmd as _run_ssh_cmd
 from common.config import CONFIG
 from common.validate import verify
 
 
-def check_cpu(con_info):
+def check_fuel_cpu(con_info):
     '''Checks CPU configuration on host.'''
 
     cmd = 'lscpu | grep "^CPU(s):"'
@@ -15,7 +17,7 @@ def check_cpu(con_info):
 
     cores = int(stdout.split()[-1].strip())
 
-    verify(cores <= CONFIG['hw_default_cpu_core_number'],
+    verify(cores <= CONFIG['hw_fuel_cpu_core_number'],
            'CPU has more cores (%d) than recommended.' % (cores,)
            )
 
@@ -42,7 +44,7 @@ def _get_size_mb(size, units):
     return float(size) / div_coef
 
 
-def check_ram(con_info):
+def check_fuel_ram(con_info):
     '''Checks RAM size on host.'''
 
     cmd = 'grep MemTotal /proc/meminfo'
@@ -52,16 +54,16 @@ def check_ram(con_info):
 
     mem_size = _get_size_mb(sz[0], sz[1])
 
-    verify(mem_size <= CONFIG['hw_default_ram_size_mb'],
+    verify(mem_size <= CONFIG['hw_fuel_ram_size_mb'],
            'RAM size (%s %s) is larger than recommended value.'
            % (sz[0], sz[1])
            )
 
 
-def check_capacity(con_info):
+def check_fuel_capacity(con_info):
     '''Checks capacity of network card.'''
 
-    cmd = 'ethtool eth0 | grep %dbaseT' % CONFIG['hw_default_network_capacity']
+    cmd = 'ethtool eth0 | grep %dbaseT' % CONFIG['hw_fuel_network_capacity']
 
     stdout, stderr = _run_ssh_cmd(cmd, con_info)
 
@@ -70,7 +72,7 @@ def check_capacity(con_info):
            % (CONFIG['hw_default_network_capacity'],))
 
 
-def check_ipmi_access(con_info):
+def check_fuel_ipmi_access(con_info):
     '''Checks IPMI access on host.'''
 
     cmd = 'ipmitool sel list'
@@ -80,3 +82,8 @@ def check_ipmi_access(con_info):
 
     verify(err_match not in stderr,
            'IPMI is not configured on host %s' % con_info["host"])
+
+CHECKS = [check[1] for check in inspect.getmembers(sys.modules[__name__],
+                                                   inspect.isfunction)
+          if check[0].startswith('check')
+          ]

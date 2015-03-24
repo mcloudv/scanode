@@ -1,5 +1,7 @@
-* About the programme
+# About the programme
 
-    Scanode is a tool that provides hardware checks for a host. All checks are
-implemented to be run through SSH.
+Scanode is a tool that provides hardware checks for a host. All checks are
+implemented to be run through SSH. By this moment, it provides tests for
+the Fuel Master Node.
+
 

@@ -2,10 +2,7 @@
 
 from sys import argv
 
-from check.hwcheck import check_cpu
-from check.hwcheck import check_ram
-from check.hwcheck import check_capacity
-from check.hwcheck import check_ipmi_access
+from check.hwcheck import CHECKS
 
 
 def _print_head(host):
@@ -25,10 +22,12 @@ def _print_head(host):
     print '#%s#' % ('='*(len_row-2))
     print ''
 
+
 def _print_sep_traceback():
 
     len_row = 79
     print '\n#%s#\n' % ('=' * (len_row - 2))
+
 
 def _print_foot():
 
@@ -47,6 +46,7 @@ def _print_foot():
     print '#%s#' % ('='*(len_row-2))
     print ''
 
+
 def run_test(test, con_info):
     '''Executes test with con_info and catches the result of it to show in
     printable view.'''
@@ -64,29 +64,25 @@ def run_test(test, con_info):
 
     else:
         print 'OK'
-        return (test.__name__, '')
+        return ()
 
 
 def _print_fails(fails):
+
     if not fails:
+        print '\n\[ TEST PASSED ]\n'
         return
 
-    print ''
-    print '[ TEST FAILED ]'
-    print ''
+    print '\n[ TEST FAILED ]\n'
 
     for fail in fails:
-        if fail[1] == '':
-            continue
-
-        print fail[0] + ':'
-        print fail[1]
-        print ''
+        print '> {test_name}:\n{err_msg}\n'.format(test_name=fail[0],
+                                                   err_msg=fail[1])
 
 
 def main():
 
-    con_info = dict()
+    con_info = {}
 
     if len(argv) > 1:
         for arg in argv[1:]:
@@ -102,13 +98,13 @@ def main():
 
     _print_head(con_info['host'])
 
-    tests = [check_cpu, check_ram, check_capacity, check_ipmi_access]
-    fails = list()
+    fails = []
 
-    for test in tests:
-        msg = run_test(test, con_info)
-        if msg != '':
-            fails.append(msg)
+    for test in CHECKS:
+        test_result = run_test(test, con_info)
+
+        if test_result:
+            fails.append(test_result)
 
     _print_sep_traceback()
     _print_fails(fails)
